@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glitch Tic Tac Toe - Vibrant</title>
+    <style>
+        body {
+            /* Changed to a deep navy blue instead of pitch black */
+            background-color: #12121e;
+            color: #f0f0f0;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Lighter CRT Scanline Effect */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 2;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Brighter Text & Glow */
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .red-text { color: #ff477e; text-shadow: 0 0 10px rgba(255, 71, 126, 0.8); }
+        .blue-text { color: #00f0ff; text-shadow: 0 0 10px rgba(0, 240, 255, 0.8); }
+
+        .glitch-wrapper {
+            position: relative;
+            animation: glitch-skew 4s infinite linear alternate-reverse;
+        }
+
+        /* Lighter, clearer controls */
+        .controls {
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            background: rgba(37, 37, 64, 0.9);
+            padding: 15px 25px;
+            border-radius: 8px;
+            border: 1px solid #4e4e73;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+
+        select, button, input[type="text"] {
+            background-color: #1a1a2e;
+            color: #00f0ff;
+            border: 1px solid #00f0ff;
+            padding: 10px 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+            transition: 0.2s;
+            text-transform: uppercase;
+            border-radius: 4px;
+            min-width: 140px;
+        }
+
+        select:hover, button:hover {
+            background-color: #00f0ff;
+            color: #1a1a2e;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        button.reset-btn {
+            border-color: #ff477e;
+            color: #ff477e;
+        }
+
+        button.reset-btn:hover {
+            background-color: #ff477e;
+            color: #1a1a2e;
+            box-shadow: 0 0 10px rgba(255, 71, 126, 0.5);
+        }
+
+        select:disabled {
+            border-color: #555;
+            color: #888;
+            cursor: not-allowed;
+            background-color: #12121e;
+            box-shadow: none;
+        }
+
+        canvas {
+            background-color: #1a1a2e; /* Lighter canvas background */
+            border: 2px solid #4e4e73;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+            cursor: crosshair;
+            z-index: 10;
+            position: relative;
+        }
+
+        #status {
+            margin-top: 25px;
+            font-size: 26px;
+            font-weight: bold;
+            height: 30px;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(18, 18, 30, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            padding: 50px;
+            border-radius: 12px;
+            border: 2px solid #fff;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 71, 126, 0.4), 0 0 40px rgba(0, 240, 255, 0.4);
+            animation: modal-glitch 0.3s ease-out;
+        }
+
+        .modal h2 { margin-top: 0; font-size: 40px; margin-bottom: 25px; text-transform: uppercase; }
+
+        @keyframes glitch-skew {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(0deg); }
+            21% { transform: skew(1deg); }
+            22% { transform: skew(-1deg); }
+            23% { transform: skew(0deg); }
+            100% { transform: skew(0deg); }
+        }
+
+        @keyframes modal-glitch {
+            0% { transform: scale(0.9) translate(10px, -10px); opacity: 0; }
+            50% { transform: scale(1.02) translate(-5px, 5px); }
+            100% { transform: scale(1) translate(0, 0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glitch-wrapper">
+        <h1><span class="red-text">TIC</span> TAC <span class="blue-text">TOE</span></h1>
+    </div>
+
+    <div class="controls">
+        <button class="reset-btn" onclick="resetGame()">Reboot_SYS</button>
+        <div id="networkControls" style="display:flex; gap: 10px; align-items: center; justify-content:center;">
+            <input type="text" id="roomCodeInput" placeholder="ROOM CODE" maxlength="6" />
+            <button id="createRoomBtn" onclick="createRoom()">Create Room</button>
+            <button id="joinRoomBtn" onclick="joinRoom()">Join Room</button>
+            <button id="shareLinkBtn" onclick="shareRoomLink()" disabled>Share Link</button>
+            <span id="networkStatus" style="font-size:0.85rem; color:#00f0ff; margin-left:10px; white-space:nowrap;">OFFLINE</span>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="status">ENTER ROOM CODE OR CREATE ROOM</div>
+
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalMessage">SYSTEM HALTED</h2>
+            <button class="reset-btn" onclick="resetGame()">Restart_Sequence</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusEl = document.getElementById('status');
+        const modal = document.getElementById('resultModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const roomCodeInput = document.getElementById('roomCodeInput');
+        const createRoomBtn = document.getElementById('createRoomBtn');
+        const joinRoomBtn = document.getElementById('joinRoomBtn');
+        const shareLinkBtn = document.getElementById('shareLinkBtn');
+        const networkStatusEl = document.getElementById('networkStatus');
+
+        let socket = null;
+        let myPlayer = null;
+        let roomCode = '';
+        let isOnlineReady = false;
+        let isConnected = false;
+
+        const wsScheme = location.protocol === 'https:' ? 'wss' : 'ws';
+        const serverUrl = `${wsScheme}://${location.host}`;
+
+        const W = canvas.width;
+        const H = canvas.height;
+        const cellSize = W / 3;
+
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let pieceAnimations = []; 
+        let currentPlayer = 'X'; 
+        let gameActive = true;
+        let isBotThinking = false;
+        
+        // Brighter Neon Colors
+        const colorX = '#ff477e'; 
+        const colorO = '#00f0ff'; 
+        const gridColor = '#4e4e73'; 
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(freq, type, duration, vol = 0.05) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSound(type) {
+            if (type === 'moveX') playTone(200, 'sine', 0.1); 
+            if (type === 'moveO') playTone(300, 'sine', 0.1); 
+            if (type === 'glitch') playTone(100 + Math.random()*400, 'sawtooth', 0.05, 0.01);
+            if (type === 'win') {
+                playTone(440, 'square', 0.1);
+                setTimeout(() => playTone(554.37, 'square', 0.1), 100);
+                setTimeout(() => playTone(659.25, 'square', 0.4), 200);
+            }
+            if (type === 'tie') {
+                playTone(200, 'triangle', 0.2);
+                setTimeout(() => playTone(150, 'triangle', 0.4), 200);
+            }
+        }
+
+        canvas.addEventListener('mousedown', handleClick);
+
+        function toggleNetworkControls(enabled) {
+            const networkControls = document.getElementById('networkControls');
+            networkControls.style.display = enabled ? 'flex' : 'none';
+            if (enabled) {
+                setNetworkStatus('OFFLINE', '#ff477e');
+            } else {
+                setNetworkStatus('LOCAL', '#00f0ff');
+            }
+        }
+
+        function setNetworkStatus(message, color) {
+            networkStatusEl.innerText = message;
+            networkStatusEl.style.color = color;
+        }
+
+        function getRoomFromQuery() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('room');
+        }
+
+        function createRoom() {
+            if (!socket) connectSocket();
+            sendSocketMessage('createRoom');
+        }
+
+        function joinRoom(code) {
+            const room = code || roomCodeInput.value.trim().toUpperCase();
+            if (!room) {
+                setNetworkStatus('ENTER ROOM CODE', '#ff477e');
+                return;
+            }
+            if (!socket) connectSocket();
+            sendSocketMessage('joinRoom', { room });
+        }
+
+        function shareRoomLink() {
+            if (!roomCode) return;
+            const url = `${location.origin}${location.pathname}?room=${roomCode}`;
+            navigator.clipboard.writeText(url).then(() => {
+                setNetworkStatus('LINK COPIED', '#00f0ff');
+            }).catch(() => {
+                setNetworkStatus('COPY FAILED', '#ff477e');
+            });
+        }
+
+        function connectSocket() {
+            if (socket) return;
+            socket = new WebSocket(serverUrl);
+            socket.addEventListener('open', () => {
+                isConnected = true;
+                setNetworkStatus('CONNECTED', '#00f0ff');
+                const queryRoom = getRoomFromQuery();
+                if (queryRoom) {
+                    joinRoom(queryRoom);
+                }
+            });
+            socket.addEventListener('message', handleSocketMessage);
+            socket.addEventListener('close', () => {
+                isConnected = false;
+                isOnlineReady = false;
+                setNetworkStatus('DISCONNECTED', '#ff477e');
+            });
+            socket.addEventListener('error', () => {
+                setNetworkStatus('SERVER ERROR', '#ff477e');
+            });
+        }
+
+        function closeSocket() {
+            if (socket) {
+                socket.close();
+                socket = null;
+            }
+            isConnected = false;
+            isOnlineReady = false;
+            myPlayer = null;
+            roomCode = '';
+            setNetworkStatus('OFFLINE', '#ff477e');
+            roomCodeInput.value = '';
+            shareLinkBtn.disabled = true;
+        }
+
+        function sendSocketMessage(type, data = {}) {
+            if (!socket) {
+                setNetworkStatus('NO CONNECTION', '#ff477e');
+                return;
+            }
+            const payload = JSON.stringify({ type, ...data });
+            if (socket.readyState === WebSocket.CONNECTING) {
+                socket.addEventListener('open', () => {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        socket.send(payload);
+                    }
+                }, { once: true });
+                return;
+            }
+            if (socket.readyState !== WebSocket.OPEN) {
+                setNetworkStatus('NO CONNECTION', '#ff477e');
+                return;
+            }
+            socket.send(payload);
+        }
+
+        function handleSocketMessage(event) {
+            const message = JSON.parse(event.data);
+            if (message.type === 'roomCreated') {
+                roomCode = message.room;
+                myPlayer = message.player;
+                setNetworkStatus(`ROOM ${roomCode}`, '#00f0ff');
+                shareLinkBtn.disabled = false;
+                roomCodeInput.value = roomCode;
+                statusEl.innerText = `WAITING FOR OPPONENT`;
+                statusEl.style.color = '#ffffff';
+            }
+            if (message.type === 'roomJoined') {
+                roomCode = message.room;
+                myPlayer = message.player;
+                shareLinkBtn.disabled = false;
+                roomCodeInput.value = roomCode;
+                setNetworkStatus(`JOINED ${roomCode}`, '#00f0ff');
+                statusEl.innerText = `AWAITING UNIT ${currentPlayer}`;
+                statusEl.style.color = currentPlayer === 'X' ? colorX : colorO;
+            }
+            if (message.type === 'ready') {
+                isOnlineReady = true;
+                if (myPlayer === 'X') {
+                    statusEl.innerText = 'YOU ARE X - YOUR TURN';
+                    statusEl.style.color = colorX;
+                } else {
+                    statusEl.innerText = 'YOU ARE O - WAIT FOR X';
+                    statusEl.style.color = colorO;
+                }
+                setNetworkStatus(`PLAYING ${roomCode}`, '#00f0ff');
+            }
+            if (message.type === 'move') {
+                const col = message.index % 3;
+                const row = Math.floor(message.index / 3);
+                if (board[message.index] === '') {
+                    makeMove(message.index, message.player, col, row);
+                }
+            }
+            if (message.type === 'reset') {
+                resetGame(false);
+                statusEl.innerText = `RESET SYNCHRONIZED`;
+            }
+            if (message.type === 'error') {
+                setNetworkStatus(message.error, '#ff477e');
+            }
+            if (message.type === 'opponentLeft') {
+                setNetworkStatus('OPPONENT LEFT', '#ff477e');
+                statusEl.innerText = 'OPPONENT LEFT';
+                gameActive = false;
+            }
+        }
+
+        function renderLoop() {
+            ctx.clearRect(0, 0, W, H);
+
+            // Subtler Random Canvas Glitch Effect
+            ctx.save();
+            if (Math.random() < 0.02 && gameActive) { 
+                playSound('glitch');
+                ctx.translate((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
+                ctx.globalCompositeOperation = 'screen';
+                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 71, 126, 0.1)' : 'rgba(0, 240, 255, 0.1)';
+                ctx.fillRect(0,0,W,H);
+            }
+
+            // Draw Brighter Grid
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = gridColor;
+            ctx.lineCap = 'round';
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = gridColor;
+            
+            ctx.beginPath();
+            ctx.moveTo(cellSize, 15); ctx.lineTo(cellSize, H - 15);
+            ctx.moveTo(cellSize * 2, 15); ctx.lineTo(cellSize * 2, H - 15);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(15, cellSize); ctx.lineTo(W - 15, cellSize);
+            ctx.moveTo(15, cellSize * 2); ctx.lineTo(W - 15, cellSize * 2);
+            ctx.stroke();
+            ctx.shadowBlur = 0; // Reset shadow for pieces
+
+            // Draw Animated Pieces
+            pieceAnimations.forEach(p => {
+                if (p.scale < 1) p.scale += 0.15; 
+                if (p.scale > 1) p.scale = 1;
+
+                ctx.save();
+                let x = p.col * cellSize + cellSize / 2;
+                let y = p.row * cellSize + cellSize / 2;
+                
+                ctx.translate(x, y);
+                ctx.scale(p.scale, p.scale);
+                
+                if (p.player === 'X') drawXCore();
+                else drawOCore();
+                
+                ctx.restore();
+            });
+
+            ctx.restore();
+            requestAnimationFrame(renderLoop);
+        }
+
+        function drawXCore() {
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = colorX;
+            ctx.lineCap = 'round';
+            ctx.shadowColor = colorX;
+            ctx.shadowBlur = 15; // Increased glow
+            ctx.beginPath();
+            let size = cellSize / 2 - 30;
+            ctx.moveTo(-size, -size); ctx.lineTo(size, size);
+            ctx.moveTo(size, -size); ctx.lineTo(-size, size);
+            ctx.stroke();
+        }
+
+        function drawOCore() {
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = colorO;
+            ctx.shadowColor = colorO;
+            ctx.shadowBlur = 15; // Increased glow
+            ctx.beginPath();
+            let radius = cellSize / 2 - 25;
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        function handleClick(e) {
+            if (!gameActive || isBotThinking) return;
+            if (!isOnlineReady || !isConnected) return;
+            if (myPlayer !== currentPlayer) {
+                setNetworkStatus('WAIT FOR TURN', '#ff477e');
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const col = Math.floor(x / cellSize);
+            const row = Math.floor(y / cellSize);
+            const index = row * 3 + col;
+
+            if (board[index] === '') {
+                const playerWhoMoved = currentPlayer;
+                makeMove(index, playerWhoMoved, col, row);
+                sendSocketMessage('move', { room: roomCode, index, player: playerWhoMoved });
+            }
+        }
+
+        function makeMove(index, player, col, row) {
+            board[index] = player;
+            pieceAnimations.push({ player: player, col: col, row: row, scale: 0 });
+            playSound(player === 'X' ? 'moveX' : 'moveO');
+            
+            let result = checkWinner(board);
+            if (result !== null) {
+                gameActive = false;
+                setTimeout(() => {
+                    modal.style.display = 'flex';
+                    if (result === 'tie') {
+                        playSound('tie');
+                        modalMessage.innerText = "DRAW DETECTED";
+                        modalMessage.style.color = '#ffffff';
+                        modalMessage.style.textShadow = 'none';
+                        statusEl.innerText = "SYS: TIE";
+                        statusEl.style.color = '#ffffff';
+                    } else {
+                        playSound('win');
+                        modalMessage.innerText = `UNIT ${result} WINS`;
+                        modalMessage.style.color = result === 'X' ? colorX : colorO;
+                        modalMessage.style.textShadow = `0 0 20px ${result === 'X' ? colorX : colorO}`;
+                        statusEl.innerText = `WINNER: ${result}`;
+                        statusEl.style.color = result === 'X' ? colorX : colorO;
+                    }
+                }, 500); 
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            if (myPlayer && currentPlayer === myPlayer) {
+                statusEl.innerText = 'YOUR TURN';
+            } else {
+                statusEl.innerText = `WAIT FOR ${currentPlayer}`;
+            }
+            statusEl.style.color = currentPlayer === 'X' ? colorX : colorO;
+            statusEl.style.textShadow = `0 0 10px ${currentPlayer === 'X' ? colorX : colorO}`;
+        }
+
+        function botMove() {
+            // Bot mode disabled in online-only gameplay.
+        }
+
+        let scores = { 'X': -10, 'O': 10, 'tie': 0 };
+
+        function minimax(tempBoard, depth, isMaximizing) {
+            let result = checkWinner(tempBoard);
+            if (result !== null) return scores[result];
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (tempBoard[i] === '') {
+                        tempBoard[i] = 'O';
+                        let score = minimax(tempBoard, depth + 1, false);
+                        tempBoard[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (tempBoard[i] === '') {
+                        tempBoard[i] = 'X';
+                        let score = minimax(tempBoard, depth + 1, true);
+                        tempBoard[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function checkWinner(b) {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]            
+            ];
+            for (let i = 0; i < winPatterns.length; i++) {
+                const [p1, p2, p3] = winPatterns[i];
+                if (b[p1] && b[p1] === b[p2] && b[p1] === b[p3]) return b[p1];
+            }
+            if (!b.includes('')) return 'tie';
+            return null;
+        }
+
+        function resetGame(sendNetwork = true) {
+            board = ['', '', '', '', '', '', '', '', ''];
+            pieceAnimations = [];
+            currentPlayer = 'X';
+            gameActive = true;
+            isBotThinking = false;
+            modal.style.display = 'none';
+            statusEl.innerText = "AWAITING UNIT X";
+            statusEl.style.color = colorX;
+            statusEl.style.textShadow = `0 0 10px ${colorX}`;
+            playSound('tie'); 
+            if (sendNetwork && isConnected && roomCode) {
+                sendSocketMessage('reset', { room: roomCode });
+            }
+        }
+
+        // Setup Initial UI State
+        statusEl.style.color = colorX;
+        statusEl.style.textShadow = `0 0 10px ${colorX}`;
+        requestAnimationFrame(renderLoop);
+
+    </script>
+</body>
+</html>
