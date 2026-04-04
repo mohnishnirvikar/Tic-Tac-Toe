@@ -13,7 +13,8 @@ const contentTypeMap = {
 };
 
 const server = http.createServer((req, res) => {
-  const urlPath = req.url === '/' ? '/tic-tac-toe.html' : req.url;
+  const parsedUrl = new URL(req.url, 'http://localhost');
+  const urlPath = parsedUrl.pathname === '/' ? '/tic-tac-toe.html' : parsedUrl.pathname;
   const filePath = path.join(publicDir, decodeURIComponent(urlPath));
   if (!filePath.startsWith(publicDir)) {
     res.writeHead(400);
