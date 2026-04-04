@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glitch Tic Tac Toe - Vibrant</title>
+    <title>Glitch Tic Tac Toe</title>
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { height: 100%; }
+
         body {
-            /* Changed to a deep navy blue instead of pitch black */
             background-color: #12121e;
             color: #f0f0f0;
             font-family: 'Courier New', Courier, monospace;
@@ -14,155 +17,182 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            position: relative;
+            min-height: 100%;
+            padding: 16px 12px;
+            gap: 10px;
+            overflow-x: hidden;
         }
 
-        /* Lighter CRT Scanline Effect */
         body::after {
             content: " ";
             display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            z-index: 2;
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.08) 50%),
+                        linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03));
             background-size: 100% 4px, 6px 100%;
             pointer-events: none;
+            z-index: 2;
         }
 
-        /* Brighter Text & Glow */
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            position: relative;
+        .glitch-wrapper {
+            animation: glitch-skew 4s infinite linear alternate-reverse;
             z-index: 10;
         }
 
-        .red-text { color: #ff477e; text-shadow: 0 0 10px rgba(255, 71, 126, 0.8); }
-        .blue-text { color: #00f0ff; text-shadow: 0 0 10px rgba(0, 240, 255, 0.8); }
-
-        .glitch-wrapper {
-            position: relative;
-            animation: glitch-skew 4s infinite linear alternate-reverse;
+        h1 {
+            font-size: clamp(1.4rem, 7vw, 2.8rem);
+            text-transform: uppercase;
+            letter-spacing: clamp(2px, 2vw, 8px);
+            text-align: center;
+            white-space: nowrap;
         }
 
-        /* Lighter, clearer controls */
+        .red-text  { color: #ff477e; text-shadow: 0 0 10px rgba(255,71,126,0.8); }
+        .blue-text { color: #00f0ff; text-shadow: 0 0 10px rgba(0,240,255,0.8); }
+
         .controls {
-            margin-bottom: 25px;
+            width: 100%;
+            max-width: 480px;
+            background: rgba(37,37,64,0.9);
+            border: 1px solid #4e4e73;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .controls-row {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            align-items: center;
-            gap: 15px;
-            background: rgba(37, 37, 64, 0.9);
-            padding: 15px 25px;
-            border-radius: 8px;
-            border: 1px solid #4e4e73;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
-            z-index: 10;
+            gap: 6px;
         }
 
-        select, button, input[type="text"] {
-            background-color: #1a1a2e;
-            color: #00f0ff;
-            border: 1px solid #00f0ff;
-            padding: 10px 15px;
+        button, input[type="text"] {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 16px;
             font-weight: bold;
-            cursor: pointer;
-            outline: none;
-            transition: 0.2s;
             text-transform: uppercase;
             border-radius: 4px;
-            min-width: 140px;
+            outline: none;
+            transition: 0.15s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            padding: 8px 10px;
+            font-size: clamp(10px, 2.8vw, 13px);
         }
 
-        select:hover, button:hover {
-            background-color: #00f0ff;
+        button {
+            background: #1a1a2e;
+            color: #00f0ff;
+            border: 1px solid #00f0ff;
+            cursor: pointer;
+            flex: 1 1 70px;
+            min-width: 70px;
+            max-width: 150px;
+        }
+
+        button:hover, button:active {
+            background: #00f0ff;
             color: #1a1a2e;
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            box-shadow: 0 0 8px rgba(0,240,255,0.5);
         }
 
-        button.reset-btn {
-            border-color: #ff477e;
-            color: #ff477e;
-        }
-
-        button.reset-btn:hover {
-            background-color: #ff477e;
+        button.reset-btn { border-color: #ff477e; color: #ff477e; }
+        button.reset-btn:hover, button.reset-btn:active {
+            background: #ff477e;
             color: #1a1a2e;
-            box-shadow: 0 0 10px rgba(255, 71, 126, 0.5);
+            box-shadow: 0 0 8px rgba(255,71,126,0.5);
         }
 
-        select:disabled {
-            border-color: #555;
-            color: #888;
-            cursor: not-allowed;
-            background-color: #12121e;
-            box-shadow: none;
+        button:disabled {
+            border-color: #444; color: #444;
+            background: #12121e; cursor: not-allowed; box-shadow: none;
         }
 
-        canvas {
-            background-color: #1a1a2e; /* Lighter canvas background */
-            border: 2px solid #4e4e73;
-            border-radius: 8px;
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
-            cursor: crosshair;
-            z-index: 10;
-            position: relative;
-        }
-
-        #status {
-            margin-top: 25px;
-            font-size: 26px;
-            font-weight: bold;
-            height: 30px;
-            z-index: 10;
-            text-transform: uppercase;
+        input[type="text"] {
+            background: #1a1a2e;
+            color: #00f0ff;
+            border: 1px solid #00f0ff;
+            flex: 1 1 90px;
+            min-width: 80px;
+            max-width: 130px;
             letter-spacing: 3px;
         }
 
-        /* Modal Styles */
+        #networkStatus {
+            font-size: clamp(9px, 2.5vw, 12px);
+            color: #00f0ff;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            align-self: center;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        canvas {
+            background: #1a1a2e;
+            border: 2px solid #4e4e73;
+            border-radius: 8px;
+            box-shadow: 0 0 24px rgba(0,240,255,0.15);
+            cursor: crosshair;
+            z-index: 10;
+            display: block;
+            touch-action: none;
+        }
+
+        #status {
+            font-size: clamp(11px, 3.5vw, 20px);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: clamp(1px, 0.8vw, 3px);
+            text-align: center;
+            z-index: 10;
+            min-height: 18px;
+        }
+
         .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(18, 18, 30, 0.9);
+            inset: 0;
+            background: rgba(18,18,30,0.92);
             justify-content: center;
             align-items: center;
             z-index: 100;
+            padding: 20px;
         }
 
         .modal-content {
             background: #1a1a2e;
-            padding: 50px;
+            padding: clamp(20px, 6vw, 48px);
             border-radius: 12px;
             border: 2px solid #fff;
             text-align: center;
-            box-shadow: 0 0 40px rgba(255, 71, 126, 0.4), 0 0 40px rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 40px rgba(255,71,126,0.4), 0 0 40px rgba(0,240,255,0.4);
             animation: modal-glitch 0.3s ease-out;
+            width: 100%;
+            max-width: 340px;
         }
 
-        .modal h2 { margin-top: 0; font-size: 40px; margin-bottom: 25px; text-transform: uppercase; }
+        .modal h2 {
+            font-size: clamp(20px, 6vw, 36px);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
 
         @keyframes glitch-skew {
-            0% { transform: skew(0deg); }
-            20% { transform: skew(0deg); }
+            0%,20%,23%,100% { transform: skew(0deg); }
             21% { transform: skew(1deg); }
             22% { transform: skew(-1deg); }
-            23% { transform: skew(0deg); }
-            100% { transform: skew(0deg); }
         }
 
         @keyframes modal-glitch {
-            0% { transform: scale(0.9) translate(10px, -10px); opacity: 0; }
-            50% { transform: scale(1.02) translate(-5px, 5px); }
-            100% { transform: scale(1) translate(0, 0); opacity: 1; }
+            0%   { transform: scale(0.9) translate(10px,-10px); opacity: 0; }
+            50%  { transform: scale(1.02) translate(-5px,5px); }
+            100% { transform: scale(1) translate(0,0); opacity: 1; }
         }
     </style>
 </head>
@@ -173,17 +203,19 @@
     </div>
 
     <div class="controls">
-        <button class="reset-btn" onclick="resetGame()">Reboot_SYS</button>
-        <div id="networkControls" style="display:flex; gap: 10px; align-items: center; justify-content:center;">
+        <div class="controls-row">
+            <button class="reset-btn" onclick="resetGame()">Reboot_SYS</button>
             <input type="text" id="roomCodeInput" placeholder="ROOM CODE" maxlength="6" />
-            <button id="createRoomBtn" onclick="createRoom()">Create Room</button>
-            <button id="joinRoomBtn" onclick="joinRoom()">Join Room</button>
+            <button onclick="createRoom()">Create Room</button>
+        </div>
+        <div class="controls-row">
+            <button onclick="joinRoom()">Join Room</button>
             <button id="shareLinkBtn" onclick="shareRoomLink()" disabled>Share Link</button>
-            <span id="networkStatus" style="font-size:0.85rem; color:#00f0ff; margin-left:10px; white-space:nowrap;">OFFLINE</span>
+            <span id="networkStatus">OFFLINE</span>
         </div>
     </div>
 
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <div id="status">ENTER ROOM CODE OR CREATE ROOM</div>
 
     <div id="resultModal" class="modal">
@@ -194,92 +226,89 @@
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const statusEl = document.getElementById('status');
-        const modal = document.getElementById('resultModal');
-        const modalMessage = document.getElementById('modalMessage');
-        const roomCodeInput = document.getElementById('roomCodeInput');
-        const createRoomBtn = document.getElementById('createRoomBtn');
-        const joinRoomBtn = document.getElementById('joinRoomBtn');
-        const shareLinkBtn = document.getElementById('shareLinkBtn');
+        const canvas         = document.getElementById('gameCanvas');
+        const ctx            = canvas.getContext('2d');
+        const statusEl       = document.getElementById('status');
+        const modal          = document.getElementById('resultModal');
+        const modalMessage   = document.getElementById('modalMessage');
+        const roomCodeInput  = document.getElementById('roomCodeInput');
+        const shareLinkBtn   = document.getElementById('shareLinkBtn');
         const networkStatusEl = document.getElementById('networkStatus');
 
-        let socket = null;
-        let myPlayer = null;
-        let roomCode = '';
-        let isOnlineReady = false;
-        let isConnected = false;
+        // ── Responsive canvas ──
+        function getCanvasSize() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const maxH = vh - 260; // headroom for title + controls + status + gaps
+            const maxW = vw - 24;
+            return Math.max(Math.min(maxH, maxW, 420), 220);
+        }
 
-        const wsScheme = location.protocol === 'https:' ? 'wss' : 'ws';
+        function resizeCanvas() {
+            const size = getCanvasSize();
+            canvas.width  = size;
+            canvas.height = size;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ── State ──
+        let socket = null, myPlayer = null, roomCode = '', isOnlineReady = false, isConnected = false;
+        const wsScheme  = location.protocol === 'https:' ? 'wss' : 'ws';
         const serverUrl = `${wsScheme}://${location.host}`;
 
-        const W = canvas.width;
-        const H = canvas.height;
-        const cellSize = W / 3;
+        let board = ['','','','','','','','',''];
+        let pieceAnimations = [];
+        let currentPlayer = 'X', gameActive = true, isBotThinking = false;
 
-        let board = ['', '', '', '', '', '', '', '', ''];
-        let pieceAnimations = []; 
-        let currentPlayer = 'X'; 
-        let gameActive = true;
-        let isBotThinking = false;
-        
-        // Brighter Neon Colors
-        const colorX = '#ff477e'; 
-        const colorO = '#00f0ff'; 
-        const gridColor = '#4e4e73'; 
+        const colorX = '#ff477e', colorO = '#00f0ff', gridColor = '#4e4e73';
 
+        // ── Audio ──
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playTone(freq, type, duration, vol = 0.05) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
             gain.gain.setValueAtTime(vol, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
 
         function playSound(type) {
-            if (type === 'moveX') playTone(200, 'sine', 0.1); 
-            if (type === 'moveO') playTone(300, 'sine', 0.1); 
+            if (type === 'moveX') playTone(200, 'sine', 0.1);
+            if (type === 'moveO') playTone(300, 'sine', 0.1);
             if (type === 'glitch') playTone(100 + Math.random()*400, 'sawtooth', 0.05, 0.01);
             if (type === 'win') {
-                playTone(440, 'square', 0.1);
-                setTimeout(() => playTone(554.37, 'square', 0.1), 100);
-                setTimeout(() => playTone(659.25, 'square', 0.4), 200);
+                playTone(440,'square',0.1);
+                setTimeout(() => playTone(554.37,'square',0.1), 100);
+                setTimeout(() => playTone(659.25,'square',0.4), 200);
             }
             if (type === 'tie') {
-                playTone(200, 'triangle', 0.2);
-                setTimeout(() => playTone(150, 'triangle', 0.4), 200);
+                playTone(200,'triangle',0.2);
+                setTimeout(() => playTone(150,'triangle',0.4), 200);
             }
         }
 
+        // ── Input ──
         canvas.addEventListener('mousedown', handleClick);
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            const t = e.touches[0];
+            handleClick({ clientX: t.clientX, clientY: t.clientY });
+        }, { passive: false });
 
-        function toggleNetworkControls(enabled) {
-            const networkControls = document.getElementById('networkControls');
-            networkControls.style.display = enabled ? 'flex' : 'none';
-            if (enabled) {
-                setNetworkStatus('OFFLINE', '#ff477e');
-            } else {
-                setNetworkStatus('LOCAL', '#00f0ff');
-            }
-        }
-
-        function setNetworkStatus(message, color) {
-            networkStatusEl.innerText = message;
+        // ── Network ──
+        function setNetworkStatus(msg, color) {
+            networkStatusEl.innerText = msg;
             networkStatusEl.style.color = color;
         }
 
         function getRoomFromQuery() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('room');
+            return new URLSearchParams(window.location.search).get('room');
         }
 
         function createRoom() {
@@ -289,10 +318,7 @@
 
         function joinRoom(code) {
             const room = code || roomCodeInput.value.trim().toUpperCase();
-            if (!room) {
-                setNetworkStatus('ENTER ROOM CODE', '#ff477e');
-                return;
-            }
+            if (!room) { setNetworkStatus('ENTER ROOM CODE', '#ff477e'); return; }
             if (!socket) connectSocket();
             sendSocketMessage('joinRoom', { room });
         }
@@ -300,11 +326,9 @@
         function shareRoomLink() {
             if (!roomCode) return;
             const url = `${location.origin}${location.pathname}?room=${roomCode}`;
-            navigator.clipboard.writeText(url).then(() => {
-                setNetworkStatus('LINK COPIED', '#00f0ff');
-            }).catch(() => {
-                setNetworkStatus('COPY FAILED', '#ff477e');
-            });
+            navigator.clipboard.writeText(url)
+                .then(()  => setNetworkStatus('LINK COPIED', '#00f0ff'))
+                .catch(() => setNetworkStatus('COPY FAILED', '#ff477e'));
         }
 
         function connectSocket() {
@@ -313,154 +337,98 @@
             socket.addEventListener('open', () => {
                 isConnected = true;
                 setNetworkStatus('CONNECTED', '#00f0ff');
-                const queryRoom = getRoomFromQuery();
-                if (queryRoom) {
-                    joinRoom(queryRoom);
-                }
+                const q = getRoomFromQuery();
+                if (q) joinRoom(q);
             });
             socket.addEventListener('message', handleSocketMessage);
             socket.addEventListener('close', () => {
-                isConnected = false;
-                isOnlineReady = false;
+                isConnected = false; isOnlineReady = false;
                 setNetworkStatus('DISCONNECTED', '#ff477e');
             });
-            socket.addEventListener('error', () => {
-                setNetworkStatus('SERVER ERROR', '#ff477e');
-            });
-        }
-
-        function closeSocket() {
-            if (socket) {
-                socket.close();
-                socket = null;
-            }
-            isConnected = false;
-            isOnlineReady = false;
-            myPlayer = null;
-            roomCode = '';
-            setNetworkStatus('OFFLINE', '#ff477e');
-            roomCodeInput.value = '';
-            shareLinkBtn.disabled = true;
+            socket.addEventListener('error', () => setNetworkStatus('SERVER ERROR', '#ff477e'));
         }
 
         function sendSocketMessage(type, data = {}) {
-            if (!socket) {
-                setNetworkStatus('NO CONNECTION', '#ff477e');
-                return;
-            }
+            if (!socket) { setNetworkStatus('NO CONNECTION', '#ff477e'); return; }
             const payload = JSON.stringify({ type, ...data });
             if (socket.readyState === WebSocket.CONNECTING) {
                 socket.addEventListener('open', () => {
-                    if (socket.readyState === WebSocket.OPEN) {
-                        socket.send(payload);
-                    }
+                    if (socket.readyState === WebSocket.OPEN) socket.send(payload);
                 }, { once: true });
                 return;
             }
-            if (socket.readyState !== WebSocket.OPEN) {
-                setNetworkStatus('NO CONNECTION', '#ff477e');
-                return;
-            }
+            if (socket.readyState !== WebSocket.OPEN) { setNetworkStatus('NO CONNECTION', '#ff477e'); return; }
             socket.send(payload);
         }
 
         function handleSocketMessage(event) {
-            const message = JSON.parse(event.data);
-            if (message.type === 'roomCreated') {
-                roomCode = message.room;
-                myPlayer = message.player;
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'roomCreated') {
+                roomCode = msg.room; myPlayer = msg.player;
+                roomCodeInput.value = roomCode; shareLinkBtn.disabled = false;
                 setNetworkStatus(`ROOM ${roomCode}`, '#00f0ff');
-                shareLinkBtn.disabled = false;
-                roomCodeInput.value = roomCode;
-                statusEl.innerText = `WAITING FOR OPPONENT`;
-                statusEl.style.color = '#ffffff';
+                statusEl.innerText = 'WAITING FOR OPPONENT'; statusEl.style.color = '#ffffff';
             }
-            if (message.type === 'roomJoined') {
-                roomCode = message.room;
-                myPlayer = message.player;
-                shareLinkBtn.disabled = false;
-                roomCodeInput.value = roomCode;
+            if (msg.type === 'roomJoined') {
+                roomCode = msg.room; myPlayer = msg.player;
+                roomCodeInput.value = roomCode; shareLinkBtn.disabled = false;
                 setNetworkStatus(`JOINED ${roomCode}`, '#00f0ff');
                 statusEl.innerText = `AWAITING UNIT ${currentPlayer}`;
                 statusEl.style.color = currentPlayer === 'X' ? colorX : colorO;
             }
-            if (message.type === 'ready') {
+            if (msg.type === 'ready') {
                 isOnlineReady = true;
-                if (myPlayer === 'X') {
-                    statusEl.innerText = 'YOU ARE X - YOUR TURN';
-                    statusEl.style.color = colorX;
-                } else {
-                    statusEl.innerText = 'YOU ARE O - WAIT FOR X';
-                    statusEl.style.color = colorO;
-                }
                 setNetworkStatus(`PLAYING ${roomCode}`, '#00f0ff');
+                if (myPlayer === 'X') { statusEl.innerText = 'YOU ARE X - YOUR TURN'; statusEl.style.color = colorX; }
+                else                  { statusEl.innerText = 'YOU ARE O - WAIT FOR X'; statusEl.style.color = colorO; }
             }
-            if (message.type === 'move') {
-                const col = message.index % 3;
-                const row = Math.floor(message.index / 3);
-                if (board[message.index] === '') {
-                    makeMove(message.index, message.player, col, row);
-                }
+            if (msg.type === 'move') {
+                const col = msg.index % 3, row = Math.floor(msg.index / 3);
+                if (board[msg.index] === '') makeMove(msg.index, msg.player, col, row);
             }
-            if (message.type === 'reset') {
-                resetGame(false);
-                statusEl.innerText = `RESET SYNCHRONIZED`;
-            }
-            if (message.type === 'error') {
-                setNetworkStatus(message.error, '#ff477e');
-            }
-            if (message.type === 'opponentLeft') {
+            if (msg.type === 'reset') { resetGame(false); statusEl.innerText = 'RESET SYNCHRONIZED'; }
+            if (msg.type === 'error') { setNetworkStatus(msg.error, '#ff477e'); }
+            if (msg.type === 'opponentLeft') {
                 setNetworkStatus('OPPONENT LEFT', '#ff477e');
-                statusEl.innerText = 'OPPONENT LEFT';
-                gameActive = false;
+                statusEl.innerText = 'OPPONENT LEFT'; gameActive = false;
             }
         }
 
+        // ── Render ──
         function renderLoop() {
+            const W = canvas.width, H = canvas.height, cs = W / 3;
             ctx.clearRect(0, 0, W, H);
-
-            // Subtler Random Canvas Glitch Effect
             ctx.save();
-            if (Math.random() < 0.02 && gameActive) { 
+
+            if (Math.random() < 0.02 && gameActive) {
                 playSound('glitch');
-                ctx.translate((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
+                ctx.translate((Math.random()-0.5)*8, (Math.random()-0.5)*8);
                 ctx.globalCompositeOperation = 'screen';
-                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 71, 126, 0.1)' : 'rgba(0, 240, 255, 0.1)';
+                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,71,126,0.1)' : 'rgba(0,240,255,0.1)';
                 ctx.fillRect(0,0,W,H);
             }
 
-            // Draw Brighter Grid
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = gridColor;
-            ctx.lineCap = 'round';
-            ctx.shadowBlur = 5;
-            ctx.shadowColor = gridColor;
-            
+            ctx.lineWidth = Math.max(2, W * 0.01);
+            ctx.strokeStyle = gridColor; ctx.lineCap = 'round';
+            ctx.shadowBlur = 5; ctx.shadowColor = gridColor;
+            const pad = W * 0.04;
             ctx.beginPath();
-            ctx.moveTo(cellSize, 15); ctx.lineTo(cellSize, H - 15);
-            ctx.moveTo(cellSize * 2, 15); ctx.lineTo(cellSize * 2, H - 15);
+            ctx.moveTo(cs,   pad); ctx.lineTo(cs,   H-pad);
+            ctx.moveTo(cs*2, pad); ctx.lineTo(cs*2, H-pad);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(15, cellSize); ctx.lineTo(W - 15, cellSize);
-            ctx.moveTo(15, cellSize * 2); ctx.lineTo(W - 15, cellSize * 2);
+            ctx.moveTo(pad, cs);   ctx.lineTo(W-pad, cs);
+            ctx.moveTo(pad, cs*2); ctx.lineTo(W-pad, cs*2);
             ctx.stroke();
-            ctx.shadowBlur = 0; // Reset shadow for pieces
+            ctx.shadowBlur = 0;
 
-            // Draw Animated Pieces
             pieceAnimations.forEach(p => {
-                if (p.scale < 1) p.scale += 0.15; 
+                if (p.scale < 1) p.scale += 0.15;
                 if (p.scale > 1) p.scale = 1;
-
                 ctx.save();
-                let x = p.col * cellSize + cellSize / 2;
-                let y = p.row * cellSize + cellSize / 2;
-                
-                ctx.translate(x, y);
+                ctx.translate(p.col * cs + cs/2, p.row * cs + cs/2);
                 ctx.scale(p.scale, p.scale);
-                
-                if (p.player === 'X') drawXCore();
-                else drawOCore();
-                
+                if (p.player === 'X') drawX(cs); else drawO(cs);
                 ctx.restore();
             });
 
@@ -468,168 +436,100 @@
             requestAnimationFrame(renderLoop);
         }
 
-        function drawXCore() {
-            ctx.lineWidth = 8;
-            ctx.strokeStyle = colorX;
-            ctx.lineCap = 'round';
-            ctx.shadowColor = colorX;
-            ctx.shadowBlur = 15; // Increased glow
+        function drawX(cs) {
+            const size = cs * 0.28;
+            ctx.lineWidth = Math.max(3, cs * 0.07);
+            ctx.strokeStyle = colorX; ctx.lineCap = 'round';
+            ctx.shadowColor = colorX; ctx.shadowBlur = 15;
             ctx.beginPath();
-            let size = cellSize / 2 - 30;
-            ctx.moveTo(-size, -size); ctx.lineTo(size, size);
-            ctx.moveTo(size, -size); ctx.lineTo(-size, size);
+            ctx.moveTo(-size,-size); ctx.lineTo(size,size);
+            ctx.moveTo(size,-size);  ctx.lineTo(-size,size);
             ctx.stroke();
         }
 
-        function drawOCore() {
-            ctx.lineWidth = 8;
-            ctx.strokeStyle = colorO;
-            ctx.shadowColor = colorO;
-            ctx.shadowBlur = 15; // Increased glow
-            ctx.beginPath();
-            let radius = cellSize / 2 - 25;
-            ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.stroke();
+        function drawO(cs) {
+            const r = cs * 0.32;
+            ctx.lineWidth = Math.max(3, cs * 0.07);
+            ctx.strokeStyle = colorO; ctx.shadowColor = colorO; ctx.shadowBlur = 15;
+            ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.stroke();
         }
 
         function handleClick(e) {
-            if (!gameActive || isBotThinking) return;
-            if (!isOnlineReady || !isConnected) return;
-            if (myPlayer !== currentPlayer) {
-                setNetworkStatus('WAIT FOR TURN', '#ff477e');
-                return;
-            }
+            if (!gameActive || isBotThinking || !isOnlineReady || !isConnected) return;
+            if (myPlayer !== currentPlayer) { setNetworkStatus('WAIT FOR TURN', '#ff477e'); return; }
 
+            const cs = canvas.width / 3;
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const col = Math.floor(x / cellSize);
-            const row = Math.floor(y / cellSize);
+            const x = (e.clientX - rect.left) * (canvas.width  / rect.width);
+            const y = (e.clientY - rect.top)  * (canvas.height / rect.height);
+            const col = Math.floor(x / cs), row = Math.floor(y / cs);
             const index = row * 3 + col;
 
             if (board[index] === '') {
-                makeMove(index, currentPlayer, col, row);
-                sendSocketMessage('move', { room: roomCode, index, player: currentPlayer });
+                const who = currentPlayer;
+                makeMove(index, who, col, row);
+                sendSocketMessage('move', { room: roomCode, index, player: who });
             }
         }
 
         function makeMove(index, player, col, row) {
             board[index] = player;
-            pieceAnimations.push({ player: player, col: col, row: row, scale: 0 });
+            pieceAnimations.push({ player, col, row, scale: 0 });
             playSound(player === 'X' ? 'moveX' : 'moveO');
-            
-            let result = checkWinner(board);
+
+            const result = checkWinner(board);
             if (result !== null) {
                 gameActive = false;
                 setTimeout(() => {
                     modal.style.display = 'flex';
                     if (result === 'tie') {
                         playSound('tie');
-                        modalMessage.innerText = "DRAW DETECTED";
-                        modalMessage.style.color = '#ffffff';
-                        modalMessage.style.textShadow = 'none';
-                        statusEl.innerText = "SYS: TIE";
-                        statusEl.style.color = '#ffffff';
+                        modalMessage.innerText = 'DRAW DETECTED';
+                        modalMessage.style.color = '#ffffff'; modalMessage.style.textShadow = 'none';
+                        statusEl.innerText = 'SYS: TIE'; statusEl.style.color = '#ffffff';
                     } else {
                         playSound('win');
+                        const c = result === 'X' ? colorX : colorO;
                         modalMessage.innerText = `UNIT ${result} WINS`;
-                        modalMessage.style.color = result === 'X' ? colorX : colorO;
-                        modalMessage.style.textShadow = `0 0 20px ${result === 'X' ? colorX : colorO}`;
-                        statusEl.innerText = `WINNER: ${result}`;
-                        statusEl.style.color = result === 'X' ? colorX : colorO;
+                        modalMessage.style.color = c; modalMessage.style.textShadow = `0 0 20px ${c}`;
+                        statusEl.innerText = `WINNER: ${result}`; statusEl.style.color = c;
                     }
-                }, 500); 
+                }, 500);
                 return;
             }
 
             currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-            if (myPlayer && currentPlayer === myPlayer) {
-                statusEl.innerText = 'YOUR TURN';
-            } else {
-                statusEl.innerText = `WAIT FOR ${currentPlayer}`;
-            }
-            statusEl.style.color = currentPlayer === 'X' ? colorX : colorO;
-            statusEl.style.textShadow = `0 0 10px ${currentPlayer === 'X' ? colorX : colorO}`;
-        }
-
-        function botMove() {
-            // Bot mode disabled in online-only gameplay.
-        }
-
-        let scores = { 'X': -10, 'O': 10, 'tie': 0 };
-
-        function minimax(tempBoard, depth, isMaximizing) {
-            let result = checkWinner(tempBoard);
-            if (result !== null) return scores[result];
-
-            if (isMaximizing) {
-                let bestScore = -Infinity;
-                for (let i = 0; i < 9; i++) {
-                    if (tempBoard[i] === '') {
-                        tempBoard[i] = 'O';
-                        let score = minimax(tempBoard, depth + 1, false);
-                        tempBoard[i] = '';
-                        bestScore = Math.max(score, bestScore);
-                    }
-                }
-                return bestScore;
-            } else {
-                let bestScore = Infinity;
-                for (let i = 0; i < 9; i++) {
-                    if (tempBoard[i] === '') {
-                        tempBoard[i] = 'X';
-                        let score = minimax(tempBoard, depth + 1, true);
-                        tempBoard[i] = '';
-                        bestScore = Math.min(score, bestScore);
-                    }
-                }
-                return bestScore;
-            }
+            statusEl.innerText = (isOnlineReady && myPlayer)
+                ? (currentPlayer === myPlayer ? 'YOUR TURN' : `WAIT FOR ${currentPlayer}`)
+                : `AWAITING UNIT ${currentPlayer}`;
+            const sc = currentPlayer === 'X' ? colorX : colorO;
+            statusEl.style.color = sc; statusEl.style.textShadow = `0 0 10px ${sc}`;
         }
 
         function checkWinner(b) {
-            const winPatterns = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8],
-                [0, 3, 6], [1, 4, 7], [2, 5, 8],
-                [0, 4, 8], [2, 4, 6]            
-            ];
-            for (let i = 0; i < winPatterns.length; i++) {
-                const [p1, p2, p3] = winPatterns[i];
-                if (b[p1] && b[p1] === b[p2] && b[p1] === b[p3]) return b[p1];
+            for (const [a,x,c] of [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]) {
+                if (b[a] && b[a] === b[x] && b[a] === b[c]) return b[a];
             }
-            if (!b.includes('')) return 'tie';
-            return null;
+            return b.includes('') ? null : 'tie';
         }
 
         function resetGame(sendNetwork = true) {
-            board = ['', '', '', '', '', '', '', '', ''];
-            pieceAnimations = [];
-            currentPlayer = 'X';
-            gameActive = true;
-            isBotThinking = false;
+            board = ['','','','','','','','',''];
+            pieceAnimations = []; currentPlayer = 'X'; gameActive = true; isBotThinking = false;
             modal.style.display = 'none';
-            statusEl.innerText = "AWAITING UNIT X";
-            statusEl.style.color = colorX;
-            statusEl.style.textShadow = `0 0 10px ${colorX}`;
-            playSound('tie'); 
-            if (sendNetwork && isConnected && roomCode) {
-                sendSocketMessage('reset', { room: roomCode });
-            }
+            statusEl.innerText = 'AWAITING UNIT X';
+            statusEl.style.color = colorX; statusEl.style.textShadow = `0 0 10px ${colorX}`;
+            playSound('tie');
+            if (sendNetwork && isConnected && roomCode) sendSocketMessage('reset', { room: roomCode });
         }
 
-        // Setup Initial UI State
+        // ── Init ──
         statusEl.style.color = colorX;
         statusEl.style.textShadow = `0 0 10px ${colorX}`;
         requestAnimationFrame(renderLoop);
 
-        // Auto-join if opened via shared link
         const autoRoom = getRoomFromQuery();
-        if (autoRoom) {
-            roomCodeInput.value = autoRoom;
-            connectSocket();
-        }
-
+        if (autoRoom) { roomCodeInput.value = autoRoom; connectSocket(); }
     </script>
 </body>
 </html>
