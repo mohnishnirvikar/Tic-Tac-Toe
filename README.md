@@ -66,16 +66,23 @@ Open [http://localhost:3000](http://localhost:3000) in two browser tabs to test 
 4. Once both players are connected, the game begins. X always goes first.
 5. Click **Reboot SYS** to reset the board at any time.
 
-## Deployment
+## Deployment (Render)
 
-The project is deployed on Railway. Any push to the `main` branch triggers an automatic redeploy.
+This project can be deployed on Render as a simple Node.js web service. Render provides automatic builds and will set the `PORT` environment variable for your service.
 
-To deploy your own instance:
+To deploy on Render:
 
-1. Fork this repository.
-2. Go to [railway.app](https://railway.app) and create a new project from your fork.
-3. Railway auto-detects Node.js and runs `npm start`.
-4. Generate a public domain under **Settings > Networking**.
+1. Push this repository to GitHub (if not already pushed).
+2. Sign in to https://render.com and create a new **Web Service**.
+3. Connect your GitHub repo and select the branch `master` to deploy from.
+4. Set the **Build Command** to `npm install` and the **Start Command** to `npm start` (Render often auto-detects these).
+5. Choose the Node environment and an instance plan (the Free tier is available for small projects).
+6. Enable **Auto Deploys** from the selected branch to redeploy on each push.
+
+Notes:
+- Render exposes a `PORT` environment variable; `server.js` already uses `process.env.PORT` so no code change is needed.
+- You can also add a `render.yaml` manifest to the repo for declarative setup (already included).
+- After the service is live, share the Render URL with players. Room links like `https://your-service.url/?room=ABCDEF` will let others join directly.
 
 ## WebSocket Message Protocol
 
