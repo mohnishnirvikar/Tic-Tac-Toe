@@ -25,7 +25,7 @@ A real-time multiplayer Tic Tac Toe game with a neon glitch aesthetic, playable 
 | Client    | Vanilla HTML/CSS/JS     |
 | Canvas    | HTML5 Canvas API        |
 | Audio     | Web Audio API           |
-| Hosting   | Railway                 |
+| Hosting   | Render                  |
 
 ## Project Structure
 
